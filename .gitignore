@@ -1,0 +1,33 @@
+# Build output
+/build/
+*.o
+*.d
+*.elf
+*.hex
+*.bin
+*.map
+*.list
+*.log
+*.su
+
+# IDE-specific files
+*.launch
+*.uvoptx
+*.uvprojx
+.settings/
+
+# STM32CubeIDE / Eclipse
+Debug/
+Release/
+
+# Misc
+.metadata
+
+#references
+Shane_Ross_MATLAB_code/
+Steve_Brunton_MATLAB_code/
+
+#libraries
+en.stm32cubef3
+en.patch-cubef3-v1-11-5.zip
+en.stm32cubef3.zip

@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;drone_project/Core/Inc/mpu6050_lib&apos; to &apos;mpu6050_lib.h&apos;" description="Rename resource &apos;mpu6050_lib&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Core/Inc/mpu6050_lib" name="mpu6050_lib.h" stamp="1752290816539" updateReferences="true"/>
-</session>
