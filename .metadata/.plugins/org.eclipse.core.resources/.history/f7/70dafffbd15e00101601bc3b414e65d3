@@ -1,0 +1,32 @@
+/*
+ * mpu6050_lib.h
+ *
+ *  Created on: Jul 11, 2025
+ *      Author: Robert Chu
+ */
+
+#ifndef INC_MPU6050_LIB_H_
+
+#include "stm32f1xx_hal.h" //I2C_HandleTypeDef
+#include <stdint.h> //uint16_t
+
+//for I2C
+#define MPU6050_ADDR_LSL1	0xD0
+
+HAL_StatusTypeDef i2c_Write_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t MemAddress, uint8_t *pData, uint16_t len); // <-- Add this line here
+HAL_StatusTypeDef i2c_Read_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t regAddress, uint8_t *pData, uint16_t len);
+
+//functions that communicate to the physical sensor using i2c interface
+void mpu6050_init(I2C_HandleTypeDef *hi2c);
+void mpu6050_get_raw_measurements(I2C_HandleTypeDef *hi2c, mpu6050_sensor_data *sensor_data);
+
+//functions that modify sensor_data instances
+void sensor_data_init(mpu6050_sensor_data *sensor_data); //sets yaw, pitch, roll to 0, 0, 0
+
+
+#define INC_MPU6050_LIB_H_
+
+
+
+#endif /* INC_MPU6050_LIB_H_ */
+

@@ -1,0 +1,15 @@
+../Core/Src/mpu6050_lib.c:157:19:i2c_Read_Accelerometer	40	static
+../Core/Src/mpu6050_lib.c:184:19:i2c_Write_Accelerometer	32	static
+../Core/Src/mpu6050_lib.c:206:19:setBit	32	static
+../Core/Src/mpu6050_lib.c:213:19:setBits	32	static
+../Core/Src/mpu6050_lib.c:234:6:mpu6050_init	32	static
+../Core/Src/mpu6050_lib.c:293:6:mpu6050_get_raw_measurements	24	static
+../Core/Src/mpu6050_lib.c:311:6:sensor_data_init	16	static
+../Core/Src/mpu6050_lib.c:321:6:mpu6050_init_dmp	48	static
+../Core/Src/mpu6050_lib.c:439:6:setMemoryBank	24	static
+../Core/Src/mpu6050_lib.c:446:6:setMemoryStartAddress	24	static
+../Core/Src/mpu6050_lib.c:450:9:getOTPBankValid	32	static
+../Core/Src/mpu6050_lib.c:456:6:setIntEnabled	24	static
+../Core/Src/mpu6050_lib.c:459:6:writeMemoryBlock	48	static
+../Core/Src/mpu6050_lib.c:536:6:writeProgMemoryBlock	40	static
+../Core/Src/mpu6050_lib.c:540:6:setDMPEnabled	24	static
