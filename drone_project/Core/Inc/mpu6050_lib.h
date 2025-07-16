@@ -408,6 +408,12 @@ typedef struct
 	float32_t wz;
 } mpu6050_sensor_data;
 
+typedef struct { //used to store quaternion data from mpu6050 that is configured to use dmp.
+	float32_t w;
+	float32_t x;
+	float32_t y;
+	float32_t z;
+} Quaternion;
 //function prototypes
 HAL_StatusTypeDef i2c_Write_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t MemAddress, uint8_t *pData, uint16_t len); // <-- Add this line here
 HAL_StatusTypeDef i2c_Read_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t regAddress, uint8_t *pData, uint16_t len);
@@ -421,13 +427,19 @@ void sensor_data_init(mpu6050_sensor_data *sensor_data); //sets yaw, pitch, roll
 
 //MPU6050 Digital Motion Processor Code
 void mpu6050_init_dmp(I2C_HandleTypeDef *hi2c);
-void setMemoryBank(I2C_HandleTypeDef *hi2c, uint8_t bank, uint8_t prefetchEnabled, uint8_t userBank);
+void setMemoryBank(I2C_HandleTypeDef *hi2c, uint8_t bank, bool prefetchEnabled, bool userBank);
 void setMemoryStartAddress(I2C_HandleTypeDef *hi2c, uint8_t address);
 uint8_t getOTPBankValid(I2C_HandleTypeDef *hi2c);
 void setIntEnabled(I2C_HandleTypeDef *hi2c, uint8_t enabled);
 bool writeMemoryBlock(I2C_HandleTypeDef *hi2c, const uint8_t *data, uint16_t dataSize, uint8_t bank, uint8_t address, bool verify, bool useProgMem);
 bool writeProgMemoryBlock(I2C_HandleTypeDef *hi2c, const uint8_t *data, uint16_t dataSize, uint8_t bank, uint8_t address, bool verify);
 void setDMPEnabled(I2C_HandleTypeDef *hi2c, bool enabled);
+//int8_t GetCurrentFIFOPacket(I2C_HandleTypeDef *hi2c, uint8_t *data, uint8_t length);
+uint16_t getFIFOCount(I2C_HandleTypeDef *hi2c);
+void resetFIFO(I2C_HandleTypeDef *hi2c);
+void getFIFOBytes(I2C_HandleTypeDef *hi2c, uint8_t *data, uint8_t length);
+uint8_t dmpGetQuaternion(int16_t *data, const uint8_t* packet);
+uint8_t dmpGetQuaternionQuatStruct(Quaternion *q, const uint8_t* packet); //returns data in struct format, which is more organized than dmpGetQuaternion
 //private variables, defined in mpu6050_lib.c
 extern uint8_t i2c_RX_done;
 extern uint8_t i2c_TX_done;
@@ -437,7 +449,9 @@ extern uint8_t receive_buffer[20]; //received message buffer, randomly used
 
 //static const unsigned char dmpMemory[MPU6050_DMP_CODE_SIZE] __attribute__((section(".flash"))); //program to load into DMP, for some reason can't declare this as extern, dont even know if I need
 extern uint16_t dmpPacketSize;
+extern uint8_t *dmpPacketBuffer;
 
+#define pgm_read_byte(x) (*(x))
 
 #define INC_MPU6050_LIB_H_
 

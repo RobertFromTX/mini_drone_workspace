@@ -17,8 +17,8 @@
 .settings/
 
 # STM32CubeIDE / Eclipse
-Debug/
-Release/
+# Debug/
+# Release/
 
 # Misc
 .metadata
