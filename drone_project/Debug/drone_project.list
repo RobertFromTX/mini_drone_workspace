@@ -29,25 +29,25 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  12 .ARM.attributes 00000029  00000000  00000000  00008068  2**0
                   CONTENTS, READONLY
- 13 .debug_info   000149d4  00000000  00000000  00008091  2**0
+ 13 .debug_info   000149ad  00000000  00000000  00008091  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_abbrev 00002ebb  00000000  00000000  0001ca65  2**0
+ 14 .debug_abbrev 00002f19  00000000  00000000  0001ca3e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_aranges 000013b8  00000000  00000000  0001f920  2**3
+ 15 .debug_aranges 000013b8  00000000  00000000  0001f958  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_rnglists 00000f57  00000000  00000000  00020cd8  2**0
+ 16 .debug_rnglists 00000f57  00000000  00000000  00020d10  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_macro  000043c2  00000000  00000000  00021c2f  2**0
+ 17 .debug_macro  000043c2  00000000  00000000  00021c67  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   00015ac7  00000000  00000000  00025ff1  2**0
+ 18 .debug_line   00015ac7  00000000  00000000  00026029  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    000987e9  00000000  00000000  0003bab8  2**0
+ 19 .debug_str    000987e9  00000000  00000000  0003baf0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .comment      00000043  00000000  00000000  000d42a1  2**0
+ 20 .comment      00000043  00000000  00000000  000d42d9  2**0
                   CONTENTS, READONLY
- 21 .debug_frame  00005a40  00000000  00000000  000d42e4  2**2
+ 21 .debug_frame  00005a40  00000000  00000000  000d431c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 22 .debug_line_str 0000007a  00000000  00000000  000d9d24  2**0
+ 22 .debug_line_str 0000007a  00000000  00000000  000d9d5c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1417,20 +1417,22 @@ HAL_StatusTypeDef i2c_Write_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevA
  8000b3a:	4b0b      	ldr	r3, [pc, #44]	@ (8000b68 <i2c_Write_Accelerometer+0x80>)
  8000b3c:	2200      	movs	r2, #0
  8000b3e:	701a      	strb	r2, [r3, #0]
-	free(data);
- 8000b40:	6978      	ldr	r0, [r7, #20]
- 8000b42:	f005 f903 	bl	8005d4c <free>
+	//free(data); //originally freed data here, but causes glitches and wrong data would be sent to dmp
 	/*We wait until the Accelerometer effectively stores data*/
 	while (HAL_I2C_IsDeviceReady(hi2c, DevAddress, 1, HAL_MAX_DELAY) != HAL_OK);	//peripheral can only accept the transmission once it finishes doing what it does
- 8000b46:	bf00      	nop
- 8000b48:	8979      	ldrh	r1, [r7, #10]
- 8000b4a:	f04f 33ff 	mov.w	r3, #4294967295
- 8000b4e:	2201      	movs	r2, #1
- 8000b50:	68f8      	ldr	r0, [r7, #12]
- 8000b52:	f001 fed3 	bl	80028fc <HAL_I2C_IsDeviceReady>
- 8000b56:	4603      	mov	r3, r0
- 8000b58:	2b00      	cmp	r3, #0
- 8000b5a:	d1f5      	bne.n	8000b48 <i2c_Write_Accelerometer+0x60>
+ 8000b40:	bf00      	nop
+ 8000b42:	8979      	ldrh	r1, [r7, #10]
+ 8000b44:	f04f 33ff 	mov.w	r3, #4294967295
+ 8000b48:	2201      	movs	r2, #1
+ 8000b4a:	68f8      	ldr	r0, [r7, #12]
+ 8000b4c:	f001 fed6 	bl	80028fc <HAL_I2C_IsDeviceReady>
+ 8000b50:	4603      	mov	r3, r0
+ 8000b52:	2b00      	cmp	r3, #0
+ 8000b54:	d1f5      	bne.n	8000b42 <i2c_Write_Accelerometer+0x5a>
+
+	free(data); // free data at end
+ 8000b56:	6978      	ldr	r0, [r7, #20]
+ 8000b58:	f005 f8f8 	bl	8005d4c <free>
 
 	return HAL_OK;
  8000b5c:	2300      	movs	r3, #0
