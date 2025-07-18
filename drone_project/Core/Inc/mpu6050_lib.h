@@ -375,6 +375,8 @@
 #define MPU6050_DMP_CONFIG_SIZE     192     // dmpConfig[]
 #define MPU6050_DMP_UPDATES_SIZE    47      // dmpUpdates[]
 
+#define PI 3.14159265359
+
 //typedefs
 typedef float float32_t; //arm_math.h also defines float32_t as this
 
@@ -414,6 +416,11 @@ typedef struct { //used to store quaternion data from mpu6050 that is configured
 	float32_t y;
 	float32_t z;
 } Quaternion;
+typedef struct {
+	float32_t x;
+	float32_t y;
+	float32_t z;
+} VectorFloat;
 //function prototypes
 HAL_StatusTypeDef i2c_Write_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t MemAddress, uint8_t *pData, uint16_t len); // <-- Add this line here
 HAL_StatusTypeDef i2c_Read_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t regAddress, uint8_t *pData, uint16_t len);
@@ -440,10 +447,13 @@ void resetFIFO(I2C_HandleTypeDef *hi2c);
 void getFIFOBytes(I2C_HandleTypeDef *hi2c, uint8_t *data, uint8_t length);
 uint8_t dmpGetQuaternion(int16_t *data, const uint8_t* packet);
 uint8_t dmpGetQuaternionQuatStruct(Quaternion *q, const uint8_t* packet); //returns data in struct format, which is more organized than dmpGetQuaternion
+uint8_t dmpGetGravity(VectorFloat *v, Quaternion *q);
+uint8_t dmpGetYawPitchRoll(float *data, Quaternion *q, VectorFloat *gravity);
+
 //private variables, defined in mpu6050_lib.c
-extern uint8_t i2c_RX_done;
-extern uint8_t i2c_TX_done;
-extern uint8_t data_ready; //accelerometer data ready interrupt
+extern uint8_t i2c_RX_done; //set high in callback for i2c to let program no when to proceed
+extern uint8_t i2c_TX_done; //set high in callback for i2c to let program no when to proceed
+extern uint8_t orientation_data_ready; //accelerometer data ready interrupt
 
 extern uint8_t receive_buffer[20]; //received message buffer, randomly used
 

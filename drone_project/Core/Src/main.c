@@ -86,7 +86,10 @@ uint16_t fifoCount;
 int a;
 uint8_t fifoBuffer[64];
 
+
 Quaternion q; //store quaternion data from MPU6050 sensor
+VectorFloat gravity; //used to calculate ypr
+float ypr[3]; //yaw pitch roll data from sensor
 
 /* USER CODE END PV */
 
@@ -198,13 +201,14 @@ int main(void)
 	fifoCount = getFIFOCount(&hi2c2);
 
 	resetFIFO(&hi2c2);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  //osKernelInitialize();
+  osKernelInitialize();
   /* Create the mutex(es) */
   /* creation of xMutex */
-  //xMutexHandle = osMutexNew(&xMutex_attributes);
+  xMutexHandle = osMutexNew(&xMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
@@ -224,16 +228,16 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* creation of PIDTask */
-//  PIDTaskHandle = osThreadNew(updatePID, NULL, &PIDTask_attributes);
+  PIDTaskHandle = osThreadNew(updatePID, NULL, &PIDTask_attributes);
 
   /* creation of orientationTask */
-//  orientationTaskHandle = osThreadNew(getOrientation, NULL, &orientationTask_attributes);
+  orientationTaskHandle = osThreadNew(getOrientation, NULL, &orientationTask_attributes);
 
   /* creation of inputsTask */
-//  inputsTaskHandle = osThreadNew(getInputs, NULL, &inputsTask_attributes);
+  inputsTaskHandle = osThreadNew(getInputs, NULL, &inputsTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -244,7 +248,7 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-  //osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
@@ -252,66 +256,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-//		resetFIFO(&hi2c2);
-//		fifoCount = getFIFOCount(&hi2c2);
-//		getFIFOBytes(&hi2c2, fifoBuffer, packetSize);
-//		dmpGetQuaternionQuatStruct(&q, fifoBuffer);
 
-		while (fifoCount < packetSize)
-		{
-
-			//insert here your code
-
-			fifoCount = getFIFOCount(&hi2c2);
-
-		}
-		if (fifoCount >= 1024)
-		{
-
-			resetFIFO(&hi2c2);
-			//Serial.println(F("FIFO overflow!"));
-
-		}
-		else
-		{
-
-			if (fifoCount % packetSize != 0)
-			{
-
-				resetFIFO(&hi2c2);
-				fifoCount = getFIFOCount(&hi2c2);
-				//getFIFOBytes(&hi2c2, fifoBuffer, packetSize); //remove later
-
-			}
-			else
-			{
-
-				while (fifoCount >= packetSize)
-				{
-
-					getFIFOBytes(&hi2c2, fifoBuffer, packetSize);
-					fifoCount -= packetSize;
-
-				}
-
-				dmpGetQuaternionQuatStruct(&q, fifoBuffer);
-//				mpu.dmpGetGravity(&gravity, &q);
-//				mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-
-//				char txt[32];
-
-//			   HAL_UART_Transmit(&huart2,(uint8_t*)txt,sprintf(txt, "NUM: %u \t", a),100);
-//				 HAL_UART_Transmit(&huart2,(uint8_t*)txt,sprintf(txt, "GYROX: %2.3f \t", ypr[1]*180/PI),100); // @suppress("Float formatting support")
-//				 HAL_UART_Transmit(&huart2,(uint8_t*)txt,sprintf(txt, "GYROY: %2.3f \t", ypr[2]*180/PI),100); // @suppress("Float formatting support")
-//				 HAL_UART_Transmit(&huart2,(uint8_t*)txt,sprintf(txt, "GYROZ: %2.3f \n\r", ypr[0]*180/PI),100); // @suppress("Float formatting support")
-
-			}
-
-		}
-
-		a++;
-
-		HAL_Delay(50);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -453,14 +398,18 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-//i2c callback functions, remember i2c interface is in mpu6050.c
+//i2c callback functions, remember i2c interface is in mpu6050_lib.c
 void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	i2c_TX_done = 1;
+	i2c_TX_done = 1; //defined in mpu6050_lib.c
 }
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	i2c_RX_done = 1;
+	i2c_RX_done = 1; //defined in mpu6050_lib.c
+}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	orientation_data_ready = 1; //defined in mpu6050_lib.c
 }
 /* USER CODE END 4 */
 
@@ -513,18 +462,50 @@ void getOrientation(void *argument)
 	/* Infinite loop */
 	for (;;)
 	{
-		osStatus_t status = osMutexAcquire(xMutexHandle, osWaitForever);
-		if (status == osOK)
+		//credits: https://github.com/Pluscrafter/i2cdevlib/blob/master/STM32_HAL/Nucleo-144F722ZE/Src/main.cpp
+
+		while(!orientation_data_ready); //wait until external interrupt fires to get data when it is freshly ready
+		if (osMutexAcquire(xMutexHandle, osWaitForever) == osOK) //try to aquire mutex
 		{
-			//get accelerometer and gyro data and store in struct.
-			//reading without FIFO, IMPORTANT: if using interrupt to synchronize, need a series resistor between interrupt pin on sensor and EXTI pin. Helps to form low pass filter to dampen voltage spikes that mess up the i2c bus and probably more importantly decrease current that could drive SDA pin low.
-			mpu6050_get_raw_measurements(&hi2c2, &sensor_data_1);
-			//data_ready = 0;
-			osMutexRelease(xMutexHandle);  // Release mutex when done
+			fifoCount = getFIFOCount(&hi2c2);
+			while (fifoCount < packetSize)
+			{
+				//insert here your code
+				fifoCount = getFIFOCount(&hi2c2);
+			}
+			if (fifoCount >= 1024)
+			{
+				resetFIFO(&hi2c2);
+				//Serial.println(F("FIFO overflow!"));
+			}
+			else
+			{
+				if (fifoCount % packetSize != 0)
+				{
+					resetFIFO(&hi2c2);
+					fifoCount = getFIFOCount(&hi2c2);
+					//getFIFOBytes(&hi2c2, fifoBuffer, packetSize); //remove later
+				}
+				else
+				{
+					while (fifoCount >= packetSize)
+					{
+
+						getFIFOBytes(&hi2c2, fifoBuffer, packetSize);
+						fifoCount -= packetSize;
+
+					}
+					dmpGetQuaternionQuatStruct(&q, fifoBuffer);
+					dmpGetGravity(&gravity, &q);
+					dmpGetYawPitchRoll(ypr, &q, &gravity);
+				}
+			}
+			a++;
+
 		}
-
-		osDelay(250);
-
+		osMutexRelease(xMutexHandle);
+		HAL_Delay(20);
+		orientation_data_ready = 0;
 	}
   /* USER CODE END getOrientation */
 }

@@ -12,6 +12,7 @@
 //private variables
 uint8_t i2c_RX_done = 0;
 uint8_t i2c_TX_done = 0;
+uint8_t orientation_data_ready = 0;
 uint8_t data_ready = 0; //accelerometer data ready interrupt
 uint8_t receive_buffer[20]; //received message buffer, randomly used
 
@@ -670,4 +671,26 @@ uint8_t dmpGetQuaternionQuatStruct(Quaternion *q, const uint8_t *packet)
 		return 0;
 	}
 	return status; // int16 return value, indicates error if this line is reached
+}
+uint8_t dmpGetGravity(VectorFloat *v, Quaternion *q) {
+    v -> x = 2 * (q -> x*q -> z - q -> w*q -> y);
+    v -> y = 2 * (q -> w*q -> x + q -> y*q -> z);
+    v -> z = q -> w*q -> w - q -> x*q -> x - q -> y*q -> y + q -> z*q -> z;
+    return 0;
+}
+uint8_t dmpGetYawPitchRoll(float *data, Quaternion *q, VectorFloat *gravity) {
+    // yaw: (about Z axis)
+    data[0] = atan2(2*q -> x*q -> y - 2*q -> w*q -> z, 2*q -> w*q -> w + 2*q -> x*q -> x - 1);
+    // pitch: (nose up/down, about Y axis)
+    data[1] = atan2(gravity -> x , sqrt(gravity -> y*gravity -> y + gravity -> z*gravity -> z));
+    // roll: (tilt left/right, about X axis)
+    data[2] = atan2(gravity -> y , gravity -> z);
+    if (gravity -> z < 0) {
+        if(data[1] > 0) {
+            data[1] = PI - data[1];
+        } else {
+            data[1] = -PI - data[1];
+        }
+    }
+    return 0;
 }
