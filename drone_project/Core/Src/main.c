@@ -45,8 +45,8 @@ I2C_HandleTypeDef hi2c2;
 DMA_HandleTypeDef hdma_i2c2_tx;
 DMA_HandleTypeDef hdma_i2c2_rx;
 
-TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -124,8 +124,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C2_Init(void);
-static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
 void StartDefaultTask(void *argument);
 void updatePID(void *argument);
 void getOrientation(void *argument);
@@ -141,74 +141,58 @@ void getInputs(void *argument);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_I2C2_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_I2C2_Init();
+	MX_TIM2_Init();
+	MX_TIM3_Init();
+	/* USER CODE BEGIN 2 */
 
-	//timer 1 used for measuring duty cycle of incoming PWM signal of throttle and yaw from receiver.
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK) //CH1 and CH2 used for throttle. CH1 detects rising edge, CH2 detects falling edge
+	//timer 3 used for measuring duty cycle of incoming PWM signal of throttle, yaw, pitch and roll from receiver.
+	if (HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1) != HAL_OK) //CH1 Throttle
 	{
-	    Error_Handler();  // Error starting input capture for channel 1
+		Error_Handler();  // Error starting input capture for channel 1
 	}
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK)
+	if (HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_2) != HAL_OK) //CH2 Yaw
 	{
-	    Error_Handler();  // Error starting input capture for channel 2
+		Error_Handler();  // Error starting input capture for channel 2
 	}
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_3) != HAL_OK) //CH3 and CH4 for yaw. CH3 detects rising edge, CH4 detects falling edge
+	if (HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_3) != HAL_OK) //CH3 Pitch
 	{
-	    Error_Handler();  // Error starting input capture for channel 3
+		Error_Handler();  // Error starting input capture for channel 3
 	}
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_4) != HAL_OK)
+	if (HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_4) != HAL_OK) //CH4 Roll
 	{
-	    Error_Handler();  // Error starting input capture for channel 4
+		Error_Handler();  // Error starting input capture for channel 4
 	}
 
-	if (HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1) != HAL_OK) //CH1 and CH2 used for pitch. CH1 detects rising edge, CH2 detects falling edge
-	{
-	    Error_Handler();  // Error starting input capture for channel 1
-	}
-	if (HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2) != HAL_OK)
-	{
-	    Error_Handler();  // Error starting input capture for channel 2
-	}
-	if (HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_3) != HAL_OK) //CH3 and CH4 for roll. CH3 detects rising edge, CH4 detects falling edge
-	{
-	    Error_Handler();  // Error starting input capture for channel 3
-	}
-	if (HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4) != HAL_OK)
-	{
-	    Error_Handler();  // Error starting input capture for channel 4
-	}
 	//HAL i2c notes:
 	//address of MPU6050 device is 1101000, but we shift it to left because the transmit and receive functions require that. So we are left with 0xD0
 	//Argument to right of MPU6050_ADDR_LSL1 is the register address, see the register description in onenote.
@@ -266,332 +250,325 @@ int main(void)
 
 	resetFIFO(&hi2c2);
 
-  /* USER CODE END 2 */
+	/* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-  /* Create the mutex(es) */
-  /* creation of xMutex */
-  xMutexHandle = osMutexNew(&xMutex_attributes);
+	/* Init scheduler */
+	osKernelInitialize();
+	/* Create the mutex(es) */
+	/* creation of xMutex */
+	xMutexHandle = osMutexNew(&xMutex_attributes);
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+	/* Create the thread(s) */
+	/* creation of defaultTask */
+	defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of PIDTask */
-  PIDTaskHandle = osThreadNew(updatePID, NULL, &PIDTask_attributes);
+	/* creation of PIDTask */
+	PIDTaskHandle = osThreadNew(updatePID, NULL, &PIDTask_attributes);
 
-  /* creation of orientationTask */
-  orientationTaskHandle = osThreadNew(getOrientation, NULL, &orientationTask_attributes);
+	/* creation of orientationTask */
+	orientationTaskHandle = osThreadNew(getOrientation, NULL, &orientationTask_attributes);
 
-  /* creation of inputsTask */
-  inputsTaskHandle = osThreadNew(getInputs, NULL, &inputsTask_attributes);
+	/* creation of inputsTask */
+	inputsTaskHandle = osThreadNew(getInputs, NULL, &inputsTask_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* USER CODE BEGIN RTOS_EVENTS */
+	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
+	/* USER CODE END RTOS_EVENTS */
 
-  /* Start scheduler */
-  osKernelStart();
+	/* Start scheduler */
+	osKernelStart();
 
-  /* We should never get here as control is now taken by the scheduler */
+	/* We should never get here as control is now taken by the scheduler */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
 
-    /* USER CODE END WHILE */
+		/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+		/* USER CODE BEGIN 3 */
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Initializes the RCC Oscillators according to the specified parameters
+	 * in the RCC_OscInitTypeDef structure.
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	{
+		Error_Handler();
+	}
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	/** Initializes the CPU, AHB and APB buses clocks
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+	{
+		Error_Handler();
+	}
 }
 
 /**
-  * @brief I2C2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief I2C2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_I2C2_Init(void)
 {
 
-  /* USER CODE BEGIN I2C2_Init 0 */
+	/* USER CODE BEGIN I2C2_Init 0 */
 
-  /* USER CODE END I2C2_Init 0 */
+	/* USER CODE END I2C2_Init 0 */
 
-  /* USER CODE BEGIN I2C2_Init 1 */
+	/* USER CODE BEGIN I2C2_Init 1 */
 
-  /* USER CODE END I2C2_Init 1 */
-  hi2c2.Instance = I2C2;
-  hi2c2.Init.ClockSpeed = 400000;
-  hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_16_9;
-  hi2c2.Init.OwnAddress1 = 0;
-  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c2.Init.OwnAddress2 = 0;
-  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C2_Init 2 */
+	/* USER CODE END I2C2_Init 1 */
+	hi2c2.Instance = I2C2;
+	hi2c2.Init.ClockSpeed = 400000;
+	hi2c2.Init.DutyCycle = I2C_DUTYCYCLE_16_9;
+	hi2c2.Init.OwnAddress1 = 0;
+	hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c2.Init.OwnAddress2 = 0;
+	hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN I2C2_Init 2 */
 
-  /* USER CODE END I2C2_Init 2 */
-
-}
-
-/**
-  * @brief TIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM1_Init(void)
-{
-
-  /* USER CODE BEGIN TIM1_Init 0 */
-
-  /* USER CODE END TIM1_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_IC_InitTypeDef sConfigIC = {0};
-
-  /* USER CODE BEGIN TIM1_Init 1 */
-
-  /* USER CODE END TIM1_Init 1 */
-  htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 999;
-  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
-  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim1.Init.RepetitionCounter = 0;
-  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_IC_Init(&htim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
-  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-  if (HAL_TIM_IC_ConfigChannel(&htim1, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM1_Init 2 */
-
-  /* USER CODE END TIM1_Init 2 */
+	/* USER CODE END I2C2_Init 2 */
 
 }
 
 /**
-  * @brief TIM2 Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_TIM2_Init(void)
 {
 
-  /* USER CODE BEGIN TIM2_Init 0 */
+	/* USER CODE BEGIN TIM2_Init 0 */
 
-  /* USER CODE END TIM2_Init 0 */
+	/* USER CODE END TIM2_Init 0 */
 
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_IC_InitTypeDef sConfigIC = {0};
+	TIM_MasterConfigTypeDef sMasterConfig = {0};
+	TIM_IC_InitTypeDef sConfigIC = {0};
 
-  /* USER CODE BEGIN TIM2_Init 1 */
+	/* USER CODE BEGIN TIM2_Init 1 */
 
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 999;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 65535;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-  sConfigIC.ICFilter = 0;
-  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-  sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-  if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM2_Init 2 */
+	/* USER CODE END TIM2_Init 1 */
+	htim2.Instance = TIM2;
+	htim2.Init.Prescaler = 999;
+	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim2.Init.Period = 65535;
+	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+	sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+	sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+	sConfigIC.ICFilter = 0;
+	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+	sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+	sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+	sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM2_Init 2 */
 
-  /* USER CODE END TIM2_Init 2 */
+	/* USER CODE END TIM2_Init 2 */
 
 }
 
 /**
-  * Enable DMA controller clock
-  */
+ * @brief TIM3 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM3_Init(void)
+{
+
+	/* USER CODE BEGIN TIM3_Init 0 */
+
+	/* USER CODE END TIM3_Init 0 */
+
+	TIM_MasterConfigTypeDef sMasterConfig = {0};
+	TIM_IC_InitTypeDef sConfigIC = {0};
+
+	/* USER CODE BEGIN TIM3_Init 1 */
+
+	/* USER CODE END TIM3_Init 1 */
+	htim3.Instance = TIM3;
+	htim3.Init.Prescaler = 999;
+	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim3.Init.Period = 65535;
+	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_IC_Init(&htim3) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
+	sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+	sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+	sConfigIC.ICFilter = 0;
+	if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM3_Init 2 */
+
+	/* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
+ * Enable DMA controller clock
+ */
 static void MX_DMA_Init(void)
 {
 
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
+	/* DMA controller clock enable */
+	__HAL_RCC_DMA1_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA1_Channel4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-  /* DMA1_Channel5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+	/* DMA interrupt init */
+	/* DMA1_Channel4_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel4_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+	/* DMA1_Channel5_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
 
 /**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
+ * @brief GPIO Initialization Function
+ * @param None
+ * @retval None
+ */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	/* USER CODE BEGIN MX_GPIO_Init_1 */
 
-  /* USER CODE END MX_GPIO_Init_1 */
+	/* USER CODE END MX_GPIO_Init_1 */
 
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+	/* GPIO Ports Clock Enable */
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+	/*Configure GPIO pin : PC13 */
+	GPIO_InitStruct.Pin = GPIO_PIN_13;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	/*Configure GPIO pin : PB12 */
+	GPIO_InitStruct.Pin = GPIO_PIN_12;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+	/* EXTI interrupt init*/
+	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
+	/* USER CODE BEGIN MX_GPIO_Init_2 */
 
-  /* USER CODE END MX_GPIO_Init_2 */
+	/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -606,11 +583,15 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
 }
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	orientation_data_ready = 1; //defined in mpu6050_lib.c
+	if (GPIO_Pin == GPIO_PIN_12)
+	{
+		orientation_data_ready = 1; //defined in mpu6050_lib.c, get DMP data as soon as its ready from mpu6050
+	}
+
 }
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calculations, called when timer detects rising and falling edges
 { //most code based off of f303k8 TIM_InputCapture example from 1.11.15 firmware package, some is based off of chapter 11.3.5 of mastering stm32 book.
-	if (htim->Instance == TIM1)
+	if (htim->Instance == TIM3)
 	{
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 		{
@@ -618,13 +599,15 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 			{
 				throttleInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
 				throttleCaptureIndex = 1;
-			}
 
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
-		{
-			if(throttleCaptureIndex == 1)
+				//change polarity so that next time the falling edge is detected
+				htim->Instance->CCER &= ~TIM_CCER_CC1E;     // Disable channel
+				htim->Instance->CCER |= TIM_CCER_CC1P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC1E;      // Re-enable channel
+			}
+			else if(throttleCaptureIndex == 1)
 			{
-				throttleInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+				throttleInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
 				if(throttleInputCaptureValue2 > throttleInputCaptureValue1)
 				{
 					throttleDiffCapture = throttleInputCaptureValue2 - throttleInputCaptureValue1;
@@ -637,21 +620,28 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 					   measures */
 					Error_Handler();
 				}
-//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
+				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
 				throttleCaptureIndex = 0;
+
+				//change polarity so that next time the rising  edge is detected
+				htim->Instance->CCER &= ~TIM_CCER_CC1E;     // Disable channel
+				htim->Instance->CCER &= ~TIM_CCER_CC1P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC1E;      // Re-enable channel
 			}
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3)
+
+		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
 		{
 			if(yawCaptureIndex == 0)
 			{
-				yawInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
+				yawInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
 				yawCaptureIndex = 1;
-			}
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4)
-		{
-			if(yawCaptureIndex == 1)
+
+				htim->Instance->CCER &= ~TIM_CCER_CC2E;     // Disable channel
+				htim->Instance->CCER |= TIM_CCER_CC2P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC2E;      // Re-enable channel
+			} else if(yawCaptureIndex == 1)
 			{
-				yawInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
+				yawInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
 				if(yawInputCaptureValue2 > yawInputCaptureValue1)
 				{
 					yawDiffCapture = yawInputCaptureValue2 - yawInputCaptureValue1;
@@ -664,25 +654,27 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 					   measures */
 					Error_Handler();
 				}
-//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
+				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
 				yawCaptureIndex = 0;
+
+				htim->Instance->CCER &= ~TIM_CCER_CC2E;     // Disable channel
+				htim->Instance->CCER &= ~TIM_CCER_CC2P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC2E;      // Re-enable channel
 			}
-		}
-	} else if (htim->Instance == TIM2)
-	{
-		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+
+		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3)
 		{
 			if(pitchCaptureIndex == 0)
 			{
-				pitchInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+				pitchInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
 				pitchCaptureIndex = 1;
-			}
 
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
-		{
-			if(pitchCaptureIndex == 1)
+				htim->Instance->CCER &= ~TIM_CCER_CC3E;     // Disable channel
+				htim->Instance->CCER |= TIM_CCER_CC3P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC3E;      // Re-enable channel
+			} else if(pitchCaptureIndex == 1)
 			{
-				pitchInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
+				pitchInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
 				if(pitchInputCaptureValue2 > pitchInputCaptureValue1)
 				{
 					pitchDiffCapture = pitchInputCaptureValue2 - pitchInputCaptureValue1;
@@ -695,19 +687,24 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 					   measures */
 					Error_Handler();
 				}
-//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
+				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
 				pitchCaptureIndex = 0;
-			}
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3)
-		{
-			if(rollCaptureIndex == 0)
-			{
-				rollInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
-				rollCaptureIndex = 1;
+
+				htim->Instance->CCER &= ~TIM_CCER_CC3E;     // Disable channel
+				htim->Instance->CCER &= ~TIM_CCER_CC3P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC3E;      // Re-enable channel
 			}
 		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4)
 		{
-			if(rollCaptureIndex == 1)
+			if(rollCaptureIndex == 0)
+			{
+				rollInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
+				rollCaptureIndex = 1;
+
+				htim->Instance->CCER &= ~TIM_CCER_CC4E;     // Disable channel
+				htim->Instance->CCER |= TIM_CCER_CC4P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC4E;      // Re-enable channel
+			} else if(rollCaptureIndex == 1)
 			{
 				rollInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
 				if(rollInputCaptureValue2 > rollInputCaptureValue1)
@@ -722,11 +719,16 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 					   measures */
 					Error_Handler();
 				}
-//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
+				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
 				rollCaptureIndex = 0;
+
+				htim->Instance->CCER &= ~TIM_CCER_CC4E;     // Disable channel
+				htim->Instance->CCER &= ~TIM_CCER_CC4P;      // Toggle polarity
+				htim->Instance->CCER |= TIM_CCER_CC4E;      // Re-enable channel
 			}
 		}
 	}
+
 
 }
 /* USER CODE END 4 */
@@ -740,13 +742,13 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN 5 */
+	/* USER CODE BEGIN 5 */
 	/* Infinite loop */
 	for (;;)
 	{
 		osDelay(1);
 	}
-  /* USER CODE END 5 */
+	/* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_updatePID */
@@ -758,13 +760,13 @@ void StartDefaultTask(void *argument)
 /* USER CODE END Header_updatePID */
 void updatePID(void *argument)
 {
-  /* USER CODE BEGIN updatePID */
+	/* USER CODE BEGIN updatePID */
 	/* Infinite loop */
 	for (;;)
 	{
 		osDelay(1);
 	}
-  /* USER CODE END updatePID */
+	/* USER CODE END updatePID */
 }
 
 /* USER CODE BEGIN Header_getOrientation */
@@ -776,7 +778,7 @@ void updatePID(void *argument)
 /* USER CODE END Header_getOrientation */
 void getOrientation(void *argument)
 {
-  /* USER CODE BEGIN getOrientation */
+	/* USER CODE BEGIN getOrientation */
 	/* Infinite loop */
 	for (;;)
 	{
@@ -825,7 +827,7 @@ void getOrientation(void *argument)
 		HAL_Delay(20);
 		orientation_data_ready = 0;
 	}
-  /* USER CODE END getOrientation */
+	/* USER CODE END getOrientation */
 }
 
 /* USER CODE BEGIN Header_getInputs */
@@ -837,64 +839,64 @@ void getOrientation(void *argument)
 /* USER CODE END Header_getInputs */
 void getInputs(void *argument)
 {
-  /* USER CODE BEGIN getInputs */
+	/* USER CODE BEGIN getInputs */
 	/* Infinite loop */
 	for (;;)
 	{
 		osDelay(1);
 	}
-  /* USER CODE END getInputs */
+	/* USER CODE END getInputs */
 }
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM4 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM4 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  /* USER CODE BEGIN Callback 0 */
+	/* USER CODE BEGIN Callback 0 */
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM4)
-  {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
+	/* USER CODE END Callback 0 */
+	if (htim->Instance == TIM4)
+	{
+		HAL_IncTick();
+	}
+	/* USER CODE BEGIN Callback 1 */
 
-  /* USER CODE END Callback 1 */
+	/* USER CODE END Callback 1 */
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
+	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1)
 	{
 	}
-  /* USER CODE END Error_Handler_Debug */
+	/* USER CODE END Error_Handler_Debug */
 }
 #ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+	/* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

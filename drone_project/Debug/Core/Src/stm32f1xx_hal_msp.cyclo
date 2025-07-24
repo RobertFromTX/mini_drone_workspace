@@ -2,4 +2,4 @@
 ../Core/Src/stm32f1xx_hal_msp.c:95:6:HAL_I2C_MspInit	4
 ../Core/Src/stm32f1xx_hal_msp.c:167:6:HAL_I2C_MspDeInit	2
 ../Core/Src/stm32f1xx_hal_msp.c:204:6:HAL_TIM_IC_MspInit	3
-../Core/Src/stm32f1xx_hal_msp.c:268:6:HAL_TIM_IC_MspDeInit	3
+../Core/Src/stm32f1xx_hal_msp.c:274:6:HAL_TIM_IC_MspDeInit	3
