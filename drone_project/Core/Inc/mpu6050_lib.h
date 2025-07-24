@@ -378,7 +378,9 @@
 #define PI 3.14159265359
 
 //typedefs
+#ifndef float32_t
 typedef float float32_t; //arm_math.h also defines float32_t as this
+#endif
 
 typedef struct
 { //struct to extract and organize sensor readings. Interestingly enough, having the struct seems to make code
@@ -421,6 +423,7 @@ typedef struct {
 	float32_t y;
 	float32_t z;
 } VectorFloat;
+
 //function prototypes
 HAL_StatusTypeDef i2c_Write_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t MemAddress, uint8_t *pData, uint16_t len); // <-- Add this line here
 HAL_StatusTypeDef i2c_Read_Accelerometer(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint8_t regAddress, uint8_t *pData, uint16_t len);

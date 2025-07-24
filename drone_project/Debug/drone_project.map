@@ -71,23 +71,23 @@ E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltoo
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_muldf3.o)
                               E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a(libm_a-e_sqrt.o) (__aeabi_dmul)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_mulsf3.o)
-                              ./Core/Src/mpu6050_lib.o (__aeabi_fmul)
+                              ./Core/Src/drone_PID.o (__aeabi_fmul)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_addsubdf3.o)
                               ./Core/Src/mpu6050_lib.o (__aeabi_dsub)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_muldivdf3.o)
-                              E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a(libm_a-w_sqrt.o) (__aeabi_ddiv)
+                              ./Core/Src/drone_PID.o (__aeabi_ddiv)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_cmpdf2.o)
-                              E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a(libm_a-w_sqrt.o) (__aeabi_dcmplt)
+                              ./Core/Src/drone_PID.o (__aeabi_dcmplt)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_unorddf2.o)
                               E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a(libm_a-w_sqrt.o) (__aeabi_dcmpun)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_truncdfsf2.o)
-                              ./Core/Src/mpu6050_lib.o (__aeabi_d2f)
+                              ./Core/Src/drone_PID.o (__aeabi_d2f)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_addsubsf3.o)
-                              ./Core/Src/mpu6050_lib.o (__aeabi_fsub)
+                              ./Core/Src/drone_PID.o (__aeabi_fsub)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_muldivsf3.o)
-                              ./Core/Src/mpu6050_lib.o (__aeabi_fdiv)
+                              ./Core/Src/drone_PID.o (__aeabi_fdiv)
 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp\libgcc.a(_arm_cmpsf2.o)
-                              ./Core/Src/mpu6050_lib.o (__aeabi_fcmplt)
+                              ./Core/Src/drone_PID.o (__aeabi_fcmplt)
 
 Discarded input sections
 
@@ -103,6 +103,44 @@ Discarded input sections
  .ARM.exidx     0x00000000       0x10 E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp/crt0.o
  .ARM.attributes
                 0x00000000       0x1b E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp/crt0.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .group         0x00000000        0xc ./Core/Src/drone_PID.o
+ .text          0x00000000        0x0 ./Core/Src/drone_PID.o
+ .data          0x00000000        0x0 ./Core/Src/drone_PID.o
+ .bss           0x00000000        0x0 ./Core/Src/drone_PID.o
+ .text.initialize_PID
+                0x00000000       0x8c ./Core/Src/drone_PID.o
+ .text.set_gains_PID
+                0x00000000       0x2a ./Core/Src/drone_PID.o
+ .text.update_PID
+                0x00000000      0x31c ./Core/Src/drone_PID.o
+ .text.update_motor_input
+                0x00000000       0x36 ./Core/Src/drone_PID.o
+ .debug_info    0x00000000      0x2c6 ./Core/Src/drone_PID.o
+ .debug_abbrev  0x00000000      0x101 ./Core/Src/drone_PID.o
+ .debug_aranges
+                0x00000000       0x38 ./Core/Src/drone_PID.o
+ .debug_rnglists
+                0x00000000       0x27 ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000       0x6d ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000      0xacc ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000       0x22 ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000       0x8e ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000       0x51 ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000      0x103 ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000       0x6a ./Core/Src/drone_PID.o
+ .debug_macro   0x00000000      0x1df ./Core/Src/drone_PID.o
+ .debug_line    0x00000000      0x59a ./Core/Src/drone_PID.o
+ .debug_str     0x00000000     0x3f4e ./Core/Src/drone_PID.o
+ .comment       0x00000000       0x44 ./Core/Src/drone_PID.o
+ .debug_frame   0x00000000       0xb0 ./Core/Src/drone_PID.o
+ .ARM.attributes
+                0x00000000       0x2d ./Core/Src/drone_PID.o
  .group         0x00000000        0xc ./Core/Src/freertos.o
  .group         0x00000000        0xc ./Core/Src/freertos.o
  .group         0x00000000        0xc ./Core/Src/freertos.o
@@ -4032,6 +4070,7 @@ Linker script and memory map
 LOAD E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crti.o
 LOAD E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7-m/nofp/crtbegin.o
 LOAD E:/STM32CubeIDE_1.16.1/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp/crt0.o
+LOAD ./Core/Src/drone_PID.o
 LOAD ./Core/Src/freertos.o
 LOAD ./Core/Src/main.o
 LOAD ./Core/Src/mpu6050_lib.o
