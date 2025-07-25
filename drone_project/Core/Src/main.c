@@ -51,35 +51,35 @@ TIM_HandleTypeDef htim3;
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+												.name = "defaultTask",
+												.stack_size = 128 * 4,
+												.priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for PIDTask */
 osThreadId_t PIDTaskHandle;
 const osThreadAttr_t PIDTask_attributes = {
-  .name = "PIDTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+											.name = "PIDTask",
+											.stack_size = 128 * 4,
+											.priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for orientationTask */
 osThreadId_t orientationTaskHandle;
 const osThreadAttr_t orientationTask_attributes = {
-  .name = "orientationTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+													.name = "orientationTask",
+													.stack_size = 128 * 4,
+													.priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for inputsTask */
 osThreadId_t inputsTaskHandle;
 const osThreadAttr_t inputsTask_attributes = {
-  .name = "inputsTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+												.name = "inputsTask",
+												.stack_size = 128 * 4,
+												.priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for xMutex */
 osMutexId_t xMutexHandle;
 const osMutexAttr_t xMutex_attributes = {
-  .name = "xMutex"
+											.name = "xMutex"
 };
 /* USER CODE BEGIN PV */
 mpu6050_sensor_data sensor_data_1;
@@ -88,7 +88,6 @@ uint16_t packetSize;
 uint16_t fifoCount;
 int a;
 uint8_t fifoBuffer[64];
-
 
 Quaternion q; //store quaternion data from MPU6050 sensor
 VectorFloat gravity; //used to calculate ypr
@@ -107,7 +106,6 @@ uint32_t throttleDiffCapture = 0;
 uint32_t yawInputCaptureValue1 = 0;
 uint32_t yawInputCaptureValue2 = 0;
 uint32_t yawDiffCapture = 0;
-
 
 uint32_t pitchInputCaptureValue1 = 0;
 uint32_t pitchInputCaptureValue2 = 0;
@@ -175,7 +173,7 @@ int main(void)
 	MX_TIM3_Init();
 	/* USER CODE BEGIN 2 */
 
-	//timer 3 used for measuring duty cycle of incoming PWM signal of throttle, yaw, pitch and roll from receiver.
+	//timer3 used for measuring duty cycle of incoming PWM signal of throttle, yaw, pitch and roll from receiver.
 	if (HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1) != HAL_OK) //CH1 Throttle
 	{
 		Error_Handler();  // Error starting input capture for channel 1
@@ -193,6 +191,31 @@ int main(void)
 		Error_Handler();  // Error starting input capture for channel 4
 	}
 
+	//timer2 used to generate pwm signals to send to motor drivers
+	/* Start channel 1 */
+	if (HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1) != HAL_OK)
+	{
+	Error_Handler();
+	}
+	/* Start channel 2 */
+	if (HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2) != HAL_OK)
+	{
+	Error_Handler();
+	}
+	/* Start channel 3 */
+	if (HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3) != HAL_OK)
+	{
+	Error_Handler();
+	}
+	/* Start channel 4 */
+	if (HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4) != HAL_OK)
+	{
+	Error_Handler();
+	}
+
+	//change duty cycle
+//	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,60);
+//	__HAL_TIM_SET_COMPARE(&htim2,TIM_CHANNEL_1,800);
 	//HAL i2c notes:
 	//address of MPU6050 device is 1101000, but we shift it to left because the transmit and receive functions require that. So we are left with 0xD0
 	//Argument to right of MPU6050_ADDR_LSL1 is the register address, see the register description in onenote.
@@ -235,7 +258,6 @@ int main(void)
 	mpu6050_init_dmp(&hi2c2); //initialize mpu6050 to use dmp
 
 	setDMPEnabled(&hi2c2, true); //enable the dmp
-
 
 	packetSize = 42; //FIXME, use this: packetSize = mpu.dmpGetFIFOPacketSize();
 
@@ -337,8 +359,8 @@ void SystemClock_Config(void)
 
 	/** Initializes the CPU, AHB and APB buses clocks
 	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
@@ -397,18 +419,18 @@ static void MX_TIM2_Init(void)
 	/* USER CODE END TIM2_Init 0 */
 
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
-	TIM_IC_InitTypeDef sConfigIC = {0};
+	TIM_OC_InitTypeDef sConfigOC = {0};
 
 	/* USER CODE BEGIN TIM2_Init 1 */
 
 	/* USER CODE END TIM2_Init 1 */
 	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 999;
+	htim2.Init.Prescaler = 3;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 65535;
+	htim2.Init.Period = 999;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_IC_Init(&htim2) != HAL_OK)
+	if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
 	{
 		Error_Handler();
 	}
@@ -418,35 +440,30 @@ static void MX_TIM2_Init(void)
 	{
 		Error_Handler();
 	}
-	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-	sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-	sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
-	sConfigIC.ICFilter = 0;
-	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+	sConfigOC.OCMode = TIM_OCMODE_PWM1;
+	sConfigOC.Pulse = 0;
+	sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
 	{
 		Error_Handler();
 	}
-	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-	sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_2) != HAL_OK)
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
 	{
 		Error_Handler();
 	}
-	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_RISING;
-	sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
-	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_3) != HAL_OK)
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
 	{
 		Error_Handler();
 	}
-	sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
-	sConfigIC.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	if (HAL_TIM_IC_ConfigChannel(&htim2, &sConfigIC, TIM_CHANNEL_4) != HAL_OK)
+	if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
 	{
 		Error_Handler();
 	}
 	/* USER CODE BEGIN TIM2_Init 2 */
 
 	/* USER CODE END TIM2_Init 2 */
+	HAL_TIM_MspPostInit(&htim2);
 
 }
 
@@ -595,7 +612,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 	{
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 		{
-			if(throttleCaptureIndex == 0)
+			if (throttleCaptureIndex == 0)
 			{
 				throttleInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
 				throttleCaptureIndex = 1;
@@ -605,19 +622,21 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER |= TIM_CCER_CC1P;      // Toggle polarity
 				htim->Instance->CCER |= TIM_CCER_CC1E;      // Re-enable channel
 			}
-			else if(throttleCaptureIndex == 1)
+			else if (throttleCaptureIndex == 1)
 			{
 				throttleInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-				if(throttleInputCaptureValue2 > throttleInputCaptureValue1)
+				if (throttleInputCaptureValue2 > throttleInputCaptureValue1)
 				{
 					throttleDiffCapture = throttleInputCaptureValue2 - throttleInputCaptureValue1;
-				} else if(throttleInputCaptureValue2 < throttleInputCaptureValue1)
+				}
+				else if (throttleInputCaptureValue2 < throttleInputCaptureValue1)
 				{
 					throttleDiffCapture = (htim->Instance->ARR - throttleInputCaptureValue1) + throttleInputCaptureValue2;
-				} else
+				}
+				else
 				{
 					/* If capture values are equal, we have reached the limit of frequency
-					   measures */
+					 measures */
 					Error_Handler();
 				}
 				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
@@ -629,9 +648,10 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER |= TIM_CCER_CC1E;      // Re-enable channel
 			}
 
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+		}
+		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
 		{
-			if(yawCaptureIndex == 0)
+			if (yawCaptureIndex == 0)
 			{
 				yawInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
 				yawCaptureIndex = 1;
@@ -639,19 +659,22 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER &= ~TIM_CCER_CC2E;     // Disable channel
 				htim->Instance->CCER |= TIM_CCER_CC2P;      // Toggle polarity
 				htim->Instance->CCER |= TIM_CCER_CC2E;      // Re-enable channel
-			} else if(yawCaptureIndex == 1)
+			}
+			else if (yawCaptureIndex == 1)
 			{
 				yawInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2);
-				if(yawInputCaptureValue2 > yawInputCaptureValue1)
+				if (yawInputCaptureValue2 > yawInputCaptureValue1)
 				{
 					yawDiffCapture = yawInputCaptureValue2 - yawInputCaptureValue1;
-				} else if(yawInputCaptureValue2 < yawInputCaptureValue1)
+				}
+				else if (yawInputCaptureValue2 < yawInputCaptureValue1)
 				{
 					yawDiffCapture = (htim->Instance->ARR - yawInputCaptureValue1) + yawInputCaptureValue2;
-				} else
+				}
+				else
 				{
 					/* If capture values are equal, we have reached the limit of frequency
-					   measures */
+					 measures */
 					Error_Handler();
 				}
 				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
@@ -662,9 +685,10 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER |= TIM_CCER_CC2E;      // Re-enable channel
 			}
 
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3)
+		}
+		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3)
 		{
-			if(pitchCaptureIndex == 0)
+			if (pitchCaptureIndex == 0)
 			{
 				pitchInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
 				pitchCaptureIndex = 1;
@@ -672,19 +696,22 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER &= ~TIM_CCER_CC3E;     // Disable channel
 				htim->Instance->CCER |= TIM_CCER_CC3P;      // Toggle polarity
 				htim->Instance->CCER |= TIM_CCER_CC3E;      // Re-enable channel
-			} else if(pitchCaptureIndex == 1)
+			}
+			else if (pitchCaptureIndex == 1)
 			{
 				pitchInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_3);
-				if(pitchInputCaptureValue2 > pitchInputCaptureValue1)
+				if (pitchInputCaptureValue2 > pitchInputCaptureValue1)
 				{
 					pitchDiffCapture = pitchInputCaptureValue2 - pitchInputCaptureValue1;
-				} else if(pitchInputCaptureValue2 < pitchInputCaptureValue1)
+				}
+				else if (pitchInputCaptureValue2 < pitchInputCaptureValue1)
 				{
 					pitchDiffCapture = (htim->Instance->ARR - pitchInputCaptureValue1) + pitchInputCaptureValue2;
-				} else
+				}
+				else
 				{
 					/* If capture values are equal, we have reached the limit of frequency
-					   measures */
+					 measures */
 					Error_Handler();
 				}
 				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
@@ -694,9 +721,10 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER &= ~TIM_CCER_CC3P;      // Toggle polarity
 				htim->Instance->CCER |= TIM_CCER_CC3E;      // Re-enable channel
 			}
-		} else if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4)
+		}
+		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4)
 		{
-			if(rollCaptureIndex == 0)
+			if (rollCaptureIndex == 0)
 			{
 				rollInputCaptureValue1 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
 				rollCaptureIndex = 1;
@@ -704,19 +732,22 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 				htim->Instance->CCER &= ~TIM_CCER_CC4E;     // Disable channel
 				htim->Instance->CCER |= TIM_CCER_CC4P;      // Toggle polarity
 				htim->Instance->CCER |= TIM_CCER_CC4E;      // Re-enable channel
-			} else if(rollCaptureIndex == 1)
+			}
+			else if (rollCaptureIndex == 1)
 			{
 				rollInputCaptureValue2 = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_4);
-				if(rollInputCaptureValue2 > rollInputCaptureValue1)
+				if (rollInputCaptureValue2 > rollInputCaptureValue1)
 				{
 					rollDiffCapture = rollInputCaptureValue2 - rollInputCaptureValue1;
-				} else if(rollInputCaptureValue2 < rollInputCaptureValue1)
+				}
+				else if (rollInputCaptureValue2 < rollInputCaptureValue1)
 				{
 					rollDiffCapture = (htim->Instance->ARR - rollInputCaptureValue1) + rollInputCaptureValue2;
-				} else
+				}
+				else
 				{
 					/* If capture values are equal, we have reached the limit of frequency
-					   measures */
+					 measures */
 					Error_Handler();
 				}
 				//				uint32_t uwFrequency = HAL_RCC_GetPCLK2Freq();
@@ -728,7 +759,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) //PWM duty cycle calcul
 			}
 		}
 	}
-
 
 }
 /* USER CODE END 4 */
@@ -784,7 +814,7 @@ void getOrientation(void *argument)
 	{
 		//credits: https://github.com/Pluscrafter/i2cdevlib/blob/master/STM32_HAL/Nucleo-144F722ZE/Src/main.cpp
 
-		while(!orientation_data_ready); //wait until external interrupt fires to get data when it is freshly ready
+		while (!orientation_data_ready); //wait until external interrupt fires to get data when it is freshly ready
 		if (osMutexAcquire(xMutexHandle, osWaitForever) == osOK) //try to aquire mutex
 		{
 			fifoCount = getFIFOCount(&hi2c2);
@@ -886,17 +916,17 @@ void Error_Handler(void)
 }
 #ifdef USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
