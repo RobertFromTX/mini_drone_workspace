@@ -9,7 +9,7 @@
 #include "drone_PID.h"
 
 //PID control functions
-void initialize_PID(pid_controller *controller, uint16_t updated_measured_pos)
+void initialize_PID(drone_PID_controller *controller, uint16_t initial_measured_pitch, uint16_t initial_measured_roll)
 {
 
 	controller->Ts = 0.004; //equates to 250Hz
@@ -25,39 +25,45 @@ void initialize_PID(pid_controller *controller, uint16_t updated_measured_pos)
 	controller->proportional_out = 0;
 	controller->integral_out = 0;
 	controller->derivative_out = 0;
-	controller->total_out = 0;
 
-	controller->error = 0;
-	controller->measured_pos = updated_measured_pos;
+	controller->motor1_total_out = 0;
+	controller->motor2_total_out = 0;
+	controller->motor3_total_out = 0;
+	controller->motor4_total_out = 0;
+
+	controller->error_pitch = 0;
+	controller->error_roll = 0;
+	controller->measured_pitch = initial_measured_pitch;
+	controller->measured_roll = initial_measured_roll;
 }
-void set_gains_PID(pid_controller *controller, float Kp, float Ki, float Kd)
+void set_gains_PID(drone_PID_controller *controller, float Kp, float Ki, float Kd)
 {
 	controller->proportional_gain = Kp;
 	controller->integral_gain = Ki;
 	controller->derivative_gain = Kd;
 }
-void update_PID(pid_controller *controller, float updated_measured_pos, float set_point)
+void update_PID(drone_PID_controller *controller, float updated_measured_value, float set_point)
 {
-	float adjusted_measured_pos = updated_measured_pos;
+	float adjusted_measured_value = updated_measured_value;
 
-	float updated_error = set_point - updated_measured_pos;
+	float updated_error = set_point - updated_measured_value;
 
 	//this block makes sure that if the setpoint is near boundaries (0 or 359 degrees), can still approach the setpoint
 	//from the direction that has the angle measurement spike from 0 to 359 degrees or 359 to 0 degrees
 	//this is done by adjusting the error term
-	if (updated_measured_pos > set_point + 180 && set_point < 180)
+	if (updated_measured_value > set_point + 180 && set_point < 180)
 	{
-		adjusted_measured_pos = adjusted_measured_pos - 360;
+		adjusted_measured_value = adjusted_measured_value - 360;
 	}
-	else if (updated_measured_pos < set_point - 180 && set_point >= 180)
+	else if (updated_measured_value < set_point - 180 && set_point >= 180)
 	{
-		adjusted_measured_pos = adjusted_measured_pos + 360;
+		adjusted_measured_value = adjusted_measured_value + 360;
 	}
-	updated_error = set_point - adjusted_measured_pos;
+	updated_error = set_point - adjusted_measured_value;
 
 	//calculate difference for derivative term, but need to account for when motor goes from 359->0 and 0->359
 	//make sure that when it goes 359->0, the difference is 1, and 0->359 is -1
-	float32_t position_difference = updated_measured_pos - controller->measured_pos;
+				//	float32_t position_difference = updated_measured_value - controller->measured_pos;
 	if (position_difference > 300) //when it goes from 0 to 359
 	{
 		position_difference = position_difference - 360;
@@ -69,13 +75,13 @@ void update_PID(pid_controller *controller, float updated_measured_pos, float se
 
 	//updated the outputs of the P, I, and D components of the controller
 	controller->proportional_out = controller->proportional_gain * updated_error;
-	controller->integral_out = controller->integral_gain * controller->Ts * (updated_error + controller->error) / 2.0 + controller->integral_out;
+				//	controller->integral_out = controller->integral_gain * controller->Ts * (updated_error + controller->error) / 2.0 + controller->integral_out;
 	controller->derivative_out = ((controller->derivative_gain * 2) * (position_difference) //
 	+ (2 * controller->tau - controller->Ts) * controller->derivative_out) / (2 * controller->tau + controller->Ts);
 	//note: derivative term uses measured value instead of error term to avoid kick back
 
 //	//Deadzone for Proportional
-//	if (updated_measured_pos < 90.05 && updated_measured_pos > 89.95)
+//	if (updated_measured_value < 90.05 && updated_measured_value > 89.95)
 //	{
 //		controller->proportional_out = 0;
 //	}
@@ -100,7 +106,7 @@ void update_PID(pid_controller *controller, float updated_measured_pos, float se
 //	}
 
 	//get absolute error
-	float32_t absval_error = controller->error;
+				//	float32_t absval_error = controller->error;
 	if (absval_error < 0)
 	{
 		absval_error = -1 * absval_error;
@@ -126,36 +132,36 @@ void update_PID(pid_controller *controller, float updated_measured_pos, float se
 //		controller->integral_out = integral_min;
 //	}
 
-	//compute total output of controller
-	controller->total_out = controller->proportional_out + controller->integral_out - controller->derivative_out; //note negative sign on derivative term, this is correct since it is on the feedback loop
-
-	//deadband compensation, make sure to always provide pwm that will allow motor to be spinning.
-	if (updated_measured_pos < 90.05 && updated_measured_pos > 89.95)
-	{
-
-	}
-	else if (controller->total_out > 0)
-	{
-		controller->total_out += 100;
-	}
-	else if (controller->total_out < 0)
-	{
-		controller->total_out -= 100;
-	}
-
-	//limit total output of controller
-	if (controller->total_out > controller->out_max)
-	{
-		controller->total_out = controller->out_max;
-	}
-	else if (controller->total_out < controller->out_min)
-	{
-		controller->total_out = controller->out_min;
-	}
+			//	//compute total output of controller
+			//	controller->total_out = controller->proportional_out + controller->integral_out - controller->derivative_out; //note negative sign on derivative term, this is correct since it is on the feedback loop
+			//
+			//	//deadband compensation, make sure to always provide pwm that will allow motor to be spinning.
+			//	if (updated_measured_value < 90.05 && updated_measured_value > 89.95)
+			//	{
+			//
+			//	}
+			//	else if (controller->total_out > 0)
+			//	{
+			//		controller->total_out += 100;
+			//	}
+			//	else if (controller->total_out < 0)
+			//	{
+			//		controller->total_out -= 100;
+			//	}
+			//
+			//	//limit total output of controller
+			//	if (controller->total_out > controller->out_max)
+			//	{
+			//		controller->total_out = controller->out_max;
+			//	}
+			//	else if (controller->total_out < controller->out_min)
+			//	{
+			//		controller->total_out = controller->out_min;
+			//	}
 
 	//updated the error and measured position
-	controller->error = updated_error;
-	controller->measured_pos = updated_measured_pos;
+			//	controller->error = updated_error;
+			//	controller->measured_pos = updated_measured_value;
 
 }
 void update_motor_input(int16_t new_out, uint32_t **active_buffer_address, uint32_t **inactive_buffer_address)

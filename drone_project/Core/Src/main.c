@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "mpu6050_lib.h" //i2c interface with mpu6050
+#include "drone_PID.h" //drone PID library made by me
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,6 +116,8 @@ uint32_t rollInputCaptureValue1 = 0;
 uint32_t rollInputCaptureValue2 = 0;
 uint32_t rollDiffCapture = 0;
 
+//PID controller variables
+drone_PID_controller pid_controller;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -271,6 +274,10 @@ int main(void)
 	fifoCount = getFIFOCount(&hi2c2);
 
 	resetFIFO(&hi2c2);
+
+	//setup PID controller
+//	initialize_PID(&pid_controller, );
+//	set_gains_PID(&pid_controller, float Kp, float Ki, float Kd);
 
 	/* USER CODE END 2 */
 
@@ -794,6 +801,8 @@ void updatePID(void *argument)
 	/* Infinite loop */
 	for (;;)
 	{
+//		update_PID(&pid_controller, float updated_measured_pos, float set_point);
+//		update_motor_input(int16_t new_out, uint32_t **active_buffer, uint32_t **inactive_buffer);
 		osDelay(1);
 	}
 	/* USER CODE END updatePID */

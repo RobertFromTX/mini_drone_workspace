@@ -31,22 +31,27 @@ typedef struct
 	float integral_out;
 	float derivative_out;
 
-	float32_t error; //error is signed
-	float32_t measured_pos;
+	float32_t error_pitch; //error is signed
+	float32_t measured_pitch;
+	float32_t error_roll;
+	float32_t measured_roll;
 
-	float total_out;
+	float motor1_total_out;
+	float motor2_total_out;
+	float motor3_total_out;
+	float motor4_total_out;
 	float out_max;
 	float out_min;
-} pid_controller;
+} drone_PID_controller;
 
 
 
 
 
 //PID control related function prototypes
-void initialize_PID(pid_controller *controller, uint16_t updated_measured_pos);
-void set_gains_PID(pid_controller *controller, float Kp, float Ki, float Kd);
-void update_PID(pid_controller *controller, float updated_measured_pos, float set_point);
+void initialize_PID(drone_PID_controller *controller, uint16_t initial_measured_pitch, uint16_t initial_measured_roll);
+void set_gains_PID(drone_PID_controller *controller, float Kp, float Ki, float Kd);
+void update_PID(drone_PID_controller *controller, float updated_measured_value, float set_point);
 void update_motor_input(int16_t new_out, uint32_t **active_buffer, uint32_t **inactive_buffer);
 
 
