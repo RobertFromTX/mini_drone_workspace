@@ -92,7 +92,7 @@ uint8_t fifoBuffer[64];
 
 Quaternion q; //store quaternion data from MPU6050 sensor
 VectorFloat gravity; //used to calculate ypr
-float ypr[3]; //yaw pitch roll data from sensor
+float32_t ypr[3]; //yaw pitch roll data from sensor
 
 //Variables for measuring PWM duty cycle from the channels of the HobbyKing controller's receiver.
 uint16_t throttleCaptureIndex = 0; //TIM1 Channels 1 and 2
@@ -116,8 +116,10 @@ uint32_t rollInputCaptureValue1 = 0;
 uint32_t rollInputCaptureValue2 = 0;
 uint32_t rollDiffCapture = 0;
 
-//PID controller variables
-drone_PID_controller pid_controller;
+//controller variables
+drone_motor_controller drone_controller;
+pid_controller pitch_PID_controller;
+pid_controller roll_PID_controller;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -275,9 +277,15 @@ int main(void)
 
 	resetFIFO(&hi2c2);
 
-	//setup PID controller
-//	initialize_PID(&pid_controller, );
-//	set_gains_PID(&pid_controller, float Kp, float Ki, float Kd);
+	//setup PID controllers for pitch and roll
+	initialize_PID(&pitch_PID_controller, 0);
+	set_gains_PID(&pitch_PID_controller, 700, 0, 0);
+
+	initialize_PID(&roll_PID_controller, 0);
+	set_gains_PID(&roll_PID_controller, 700, 0, 0);
+
+	//setup drone motor controller
+	initialize_drone_motor_controller(&drone_controller, &pitch_PID_controller, &roll_PID_controller);
 
 	/* USER CODE END 2 */
 
@@ -801,8 +809,54 @@ void updatePID(void *argument)
 	/* Infinite loop */
 	for (;;)
 	{
-//		update_PID(&pid_controller, float updated_measured_pos, float set_point);
-//		update_motor_input(int16_t new_out, uint32_t **active_buffer, uint32_t **inactive_buffer);
+		// The DiffCapture variables have values between 65 to 125, which represents 1ms to 2ms pulse time in ticks (ticks occur at a frequency of 64,000 Hz).
+		// We want to map the pulse time of the PWM signal to desired tilt angles in radians.
+		// The controllers are imperfect, so we set thresholds for DiffCapture values to be set at their max or min. Anything over 120 is considered max and anything below 80 is considered min.
+		// The middle is 100 ticks of pulse width as a result, we subtract 100 to make the input 0 when joystick is in middle.
+		// The max is now 20 and min is now -20. Now, we can scale appropriately to get our desired control input by dividing or multiplying.
+		float32_t pitch_setpoint = ((int32_t) pitchDiffCapture-100);
+		if(pitch_setpoint > 20)
+		{
+			pitch_setpoint = 20;
+		} else if(pitch_setpoint < -20)
+		{
+			pitch_setpoint = -20;
+		}
+		pitch_setpoint = (pitch_setpoint/4)*3.14/180; //For pitch and roll, we scale appropriately so the max tilt angle setpoint back and forth is around 5 degrees, but converted to radians
+
+		float32_t roll_setpoint = ((int32_t) rollDiffCapture-100);
+		if(roll_setpoint > 20)
+		{
+			roll_setpoint = 20;
+		} else if(roll_setpoint < -20)
+		{
+			roll_setpoint = -20;
+		}
+		roll_setpoint = (roll_setpoint/4)*3.14/180;
+
+		float32_t yaw_signal = ((int32_t) yawDiffCapture-100)*5;
+		if(yaw_signal > 100)
+		{
+			yaw_signal = 100;
+		}
+		if(yaw_signal < -100)
+		{
+			yaw_signal = -100;
+		}
+
+		float32_t throttle_signal = (throttleDiffCapture - 60)*17;
+		if(throttle_signal > 950)
+		{
+			throttle_signal = 950;
+		}
+		if(throttle_signal < 0)
+		{
+			throttle_signal = 0;
+		}
+		update_PID(&pitch_PID_controller, ypr[1], pitch_setpoint);
+		update_PID(&roll_PID_controller, ypr[2], roll_setpoint);
+		update_signals(&drone_controller, throttle_signal, yaw_signal);
+		update_motor_input(&drone_controller, &htim2);
 		osDelay(1);
 	}
 	/* USER CODE END updatePID */
